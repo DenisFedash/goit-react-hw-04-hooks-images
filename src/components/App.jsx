@@ -2,13 +2,18 @@ import { Component } from 'react';
 import { Searchbar } from './Searchbar/Searchbar';
 import fetchImages from '../services/api';
 import { ImageGallery } from './ImageGallery/ImageGallery';
+import { Button } from './Button/Button';
+import { Loader } from './Loader/Loader';
+import { Modal } from './Modal/Modal';
 
 export class App extends Component {
   state = {
     search: '',
     images: [],
     pages: 1,
-    loading: false,
+    isLoading: false,
+    error: null,
+    largeImg: null,
   };
 
   onChangeSearch = query => {
@@ -16,32 +21,33 @@ export class App extends Component {
       images: [],
       currentPage: 1,
       search: query,
-      error: null,
     });
   };
 
-  getImages = async () => {
+  getImages = () => {
     const { pages, search } = this.state;
 
     this.setState({
       isLoading: true,
     });
 
-    try {
-      const { hits } = await fetchImages(search, pages);
-
-      this.setState(prevState => ({
-        images: [...prevState.images, ...hits],
-        currentPage: prevState.currentPage + 1,
-      }));
-    } catch (error) {
-      console.log('Smth wrong with App fetch', error);
-      this.setState({ error });
-    } finally {
-      this.setState({
-        isLoading: false,
+    fetchImages(search, pages)
+      .then(images => {
+        this.setState(prevState => ({
+          images: [...prevState.images, ...images.hits],
+          pages: prevState.pages + 1,
+        }));
+      })
+      .catch(error => {
+        this.setState({ error });
+      })
+      .finally(() => {
+        this.setState({ isLoading: false });
       });
-    }
+  };
+
+  onClickLoadMore = () => {
+    this.getImages();
   };
 
   componentDidUpdate(prevProps, prevState) {
@@ -50,15 +56,40 @@ export class App extends Component {
     if (prevSearch !== nextSearch) {
       this.getImages();
     }
+
+    if (
+      prevState.images.length < this.state.images.length &&
+      prevState.images.length !== 0
+    ) {
+      window.scrollTo({
+        top: document.documentElement.scrollHeight,
+        behavior: 'smooth',
+      });
+    }
   }
 
+  closeModal = () => {
+    this.setState({ largeImg: null });
+  };
+
+  setLargeImg = url => {
+    this.setState({ largeImg: url });
+  };
+
   render() {
-    const { images } = this.state;
+    const { images, isLoading, largeImg } = this.state;
+
     return (
       <>
         <Searchbar onSubmit={this.onChangeSearch} />
-        <ImageGallery images={images} />
-        {this.state.loading && <div>Loading...</div>}
+        {images.length > 0 && (
+          <ImageGallery setLargeImg={this.setLargeImg} images={images} />
+        )}
+        {isLoading && <Loader />}
+        {images.length > 0 && !isLoading && (
+          <Button onClick={this.onClickLoadMore} />
+        )}
+        {largeImg && <Modal onClose={this.closeModal} url={largeImg} />}
       </>
     );
   }

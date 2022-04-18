@@ -1,5 +1,6 @@
 import { Component } from 'react';
 import PropTypes from 'prop-types';
+import { Conatiner, Form, Input, Button, TextBtn } from './Searchbar.styled';
 
 export class Searchbar extends Component {
   state = {
@@ -29,13 +30,13 @@ export class Searchbar extends Component {
   };
   render() {
     return (
-      <header>
-        <form onSubmit={this.handleSubmit}>
-          <button type="submit">
-            <span>Search</span>
-          </button>
+      <Conatiner>
+        <Form onSubmit={this.handleSubmit}>
+          <Button type="submit">
+            <TextBtn>Search</TextBtn>
+          </Button>
 
-          <input
+          <Input
             type="text"
             name="search"
             autoComplete="off"
@@ -44,8 +45,8 @@ export class Searchbar extends Component {
             onChange={this.handleSearchInput}
             value={this.state.search}
           />
-        </form>
-      </header>
+        </Form>
+      </Conatiner>
     );
   }
 }

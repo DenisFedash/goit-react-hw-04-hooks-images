@@ -1,7 +1,9 @@
+import { GalleryImg } from './ImageGalleryItem.styled';
+
 const ImageGalleryItem = ({ webformatURL, tags, largeImageURL }) => {
   return (
     <li>
-      <img src={webformatURL} alt={tags} width={200} />
+      <GalleryImg src={webformatURL} alt={tags} width={200} />
     </li>
   );
 };
