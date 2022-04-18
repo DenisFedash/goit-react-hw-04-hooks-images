@@ -2,18 +2,22 @@ import { Component } from 'react';
 import { Searchbar } from './Searchbar/Searchbar';
 import fetchImages from '../services/api';
 import { ImageGallery } from './ImageGallery/ImageGallery';
-import { Button } from './Button/Button';
+import Button from './Button/Button';
 import { Loader } from './Loader/Loader';
-import { Modal } from './Modal/Modal';
+import Modal from './Modal/Modal';
 
 export class App extends Component {
   state = {
-    search: '',
-    images: [],
-    pages: 1,
+    query: '',
+    page: 1,
+    imagesOnPage: 0,
+    totalImages: 0,
     isLoading: false,
+    showModal: false,
+    images: null,
     error: null,
-    largeImg: null,
+    currentImageUrl: null,
+    currentImageDescription: null,
   };
 
   onChangeSearch = query => {
@@ -51,45 +55,109 @@ export class App extends Component {
   };
 
   componentDidUpdate(prevProps, prevState) {
-    const prevSearch = prevState.search;
-    const nextSearch = this.state.search;
-    if (prevSearch !== nextSearch) {
-      this.getImages();
-    }
+    const { query, page } = this.state;
 
-    if (
-      prevState.images.length < this.state.images.length &&
-      prevState.images.length !== 0
-    ) {
-      window.scrollTo({
-        top: document.documentElement.scrollHeight,
-        behavior: 'smooth',
-      });
+    if (prevState.query !== query) {
+      this.setState(({ isLoading }) => ({ isLoading: !isLoading }));
+
+      fetchImages(query)
+        .then(({ hits, totalHits }) => {
+          const imagesArray = hits.map(hit => ({
+            id: hit.id,
+            description: hit.tags,
+            smallImage: hit.webformatURL,
+            largeImage: hit.largeImageURL,
+          }));
+
+          return this.setState({
+            page: 1,
+            images: imagesArray,
+            imagesOnPage: imagesArray.length,
+            totalImages: totalHits,
+          });
+        })
+        .catch(error => this.setState({ error }))
+        .finally(() =>
+          this.setState(({ isLoading }) => ({ isLoading: !isLoading }))
+        );
+    }
+    if (prevState.page !== page && page !== 1) {
+      this.setState(({ isLoading }) => ({ isLoading: !isLoading }));
+
+      fetchImages(query, page)
+        .then(({ hits }) => {
+          const imagesArray = hits.map(hit => ({
+            id: hit.id,
+            description: hit.tags,
+            smallImage: hit.webformatURL,
+            largeImage: hit.largeImageURL,
+          }));
+
+          return this.setState(({ images, imagesOnPage }) => {
+            return {
+              images: [...images, ...imagesArray],
+              imagesOnPage: imagesOnPage + imagesArray.length,
+            };
+          });
+        })
+        .catch(error => this.setState({ error }))
+        .finally(() =>
+          this.setState(({ isLoading }) => ({ isLoading: !isLoading }))
+        );
     }
   }
 
-  closeModal = () => {
-    this.setState({ largeImg: null });
+  getSearchRequest = query => {
+    this.setState({ query });
   };
 
-  setLargeImg = url => {
-    this.setState({ largeImg: url });
+  onNextFetch = () => {
+    this.setState(({ page }) => ({ page: page + 1 }));
+  };
+
+  toggleModal = () => {
+    this.setState(({ showModal }) => ({ showModal: !showModal }));
+  };
+
+  openModal = e => {
+    const currentImageUrl = e.target.dataset.large;
+    const currentImageDescription = e.target.alt;
+
+    if (e.target.nodeName === 'IMG') {
+      this.setState(({ showModal }) => ({
+        showModal: !showModal,
+        currentImageUrl: currentImageUrl,
+        currentImageDescription: currentImageDescription,
+      }));
+    }
   };
 
   render() {
-    const { images, isLoading, largeImg } = this.state;
+    const {
+      images,
+      imagesOnPage,
+      totalImages,
+      isLoading,
+      showModal,
+      currentImageUrl,
+      currentImageDescription,
+    } = this.state;
 
     return (
       <>
-        <Searchbar onSubmit={this.onChangeSearch} />
-        {images.length > 0 && (
-          <ImageGallery setLargeImg={this.setLargeImg} images={images} />
-        )}
+        <Searchbar onSubmit={this.getSearchRequest} />
+        {images && <ImageGallery openModal={this.openModal} images={images} />}
         {isLoading && <Loader />}
-        {images.length > 0 && !isLoading && (
-          <Button onClick={this.onClickLoadMore} />
+        {imagesOnPage >= 12 && imagesOnPage < totalImages && (
+          <Button onNextFetch={this.onNextFetch} />
         )}
-        {largeImg && <Modal onClose={this.closeModal} url={largeImg} />}
+        {showModal && (
+          <Modal
+            onClose={this.toggleModal}
+            currentImageUrl={currentImageUrl}
+            currentImageDescription={currentImageDescription}
+          />
+        )}
       </>
     );
   }

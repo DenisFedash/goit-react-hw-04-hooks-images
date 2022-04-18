@@ -1,56 +1,56 @@
 import { Component } from 'react';
 import PropTypes from 'prop-types';
+import { ReactComponent as SearchIcon } from '../../svg/search.svg';
 import { Conatiner, Form, Input, Button, TextBtn } from './Searchbar.styled';
 
 export class Searchbar extends Component {
+  static propTypes = {
+    onSubmit: PropTypes.func.isRequired,
+  };
+
   state = {
     search: '',
   };
 
-  handleSearchInput = e => {
-    const { name, value } = e.currentTarget;
-
-    this.setState({ [name]: value });
+  onChangeInput = e => {
+    this.setState({ search: e.currentTarget.value });
   };
 
-  handleSubmit = e => {
+  onSubmitForm = e => {
     e.preventDefault();
 
-    if (!this.state.search) return;
+    const { onSubmit } = this.props;
+    const { search } = this.state;
 
-    this.props.onSubmit(this.state.search);
+    if (search.trim() === '') {
+      alert('Enter a search term.');
+      return;
+    }
 
-    this.resetForm();
+    onSubmit(search);
   };
 
-  resetForm = () => {
-    this.setState({
-      search: '',
-    });
-  };
   render() {
+    const { search } = this.state;
     return (
       <Conatiner>
-        <Form onSubmit={this.handleSubmit}>
+        <Form onSubmit={this.onSubmitForm}>
           <Button type="submit">
-            <TextBtn>Search</TextBtn>
+            <TextBtn>
+              <SearchIcon width="20px" height="20px" />
+            </TextBtn>
           </Button>
 
           <Input
             type="text"
-            name="search"
             autoComplete="off"
             autoFocus
             placeholder="Search images and photos"
-            onChange={this.handleSearchInput}
-            value={this.state.search}
+            onChange={this.onChangeInput}
+            value={search}
           />
         </Form>
       </Conatiner>
     );
   }
 }
-
-Searchbar.propTypes = {
-  onSubmit: PropTypes.func.isRequired,
-};

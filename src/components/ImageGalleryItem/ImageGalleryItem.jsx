@@ -1,10 +1,29 @@
 import { GalleryImg } from './ImageGalleryItem.styled';
+import PropTypes from 'prop-types';
 
-const ImageGalleryItem = ({ webformatURL, tags, largeImageURL }) => {
+const ImageGalleryItem = ({
+  description,
+  smallImage,
+  largeImage,
+  openModal,
+}) => {
   return (
     <li>
-      <GalleryImg src={webformatURL} alt={tags} width={200} />
+      <GalleryImg
+        src={smallImage}
+        alt={description}
+        onClick={openModal}
+        data-large={largeImage}
+      />
     </li>
   );
 };
+
+ImageGalleryItem.prototype = {
+  description: PropTypes.string,
+  smallImage: PropTypes.string.isRequired,
+  largeImage: PropTypes.string.isRequired,
+  openModal: PropTypes.func.isRequired,
+};
+
 export default ImageGalleryItem;
