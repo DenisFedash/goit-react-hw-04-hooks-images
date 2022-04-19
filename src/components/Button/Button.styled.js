@@ -3,6 +3,7 @@ import styled from '@emotion/styled';
 export const BtnContainer = styled.div`
   display: flex;
   justify-content: center;
+  padding-top: 15px;
 `;
 
 export const LoadBtn = styled.button`

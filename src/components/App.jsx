@@ -44,14 +44,7 @@ export class App extends Component {
       })
       .catch(error => {
         this.setState({ error });
-      })
-      .finally(() => {
-        this.setState({ isLoading: false });
       });
-  };
-
-  onClickLoadMore = () => {
-    this.getImages();
   };
 
   componentDidUpdate(prevProps, prevState) {
@@ -62,12 +55,14 @@ export class App extends Component {
 
       fetchImages(query)
         .then(({ hits, totalHits }) => {
-          const imagesArray = hits.map(hit => ({
-            id: hit.id,
-            description: hit.tags,
-            smallImage: hit.webformatURL,
-            largeImage: hit.largeImageURL,
-          }));
+          const imagesArray = hits.map(
+            ({ id, tags, webformatURL, largeImageURL }) => ({
+              id: id,
+              description: tags,
+              smallImage: webformatURL,
+              largeImage: largeImageURL,
+            })
+          );
 
           return this.setState({
             page: 1,
@@ -109,6 +104,10 @@ export class App extends Component {
 
   getSearchRequest = query => {
     this.setState({ query });
+    if (this.state.query === 0) {
+      alert('fuck');
+      return;
+    }
   };
 
   onNextFetch = () => {

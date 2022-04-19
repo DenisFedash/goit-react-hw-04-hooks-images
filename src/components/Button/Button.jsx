@@ -1,11 +1,13 @@
 import PropTypes from 'prop-types';
-import { LoadBtn } from './Button.styled';
+import { LoadBtn, BtnContainer } from './Button.styled';
 
 function Button({ onNextFetch }) {
   return (
-    <LoadBtn type="button" onClick={onNextFetch}>
-      Load more
-    </LoadBtn>
+    <BtnContainer>
+      <LoadBtn type="button" onClick={onNextFetch}>
+        Load more
+      </LoadBtn>
+    </BtnContainer>
   );
 }
 

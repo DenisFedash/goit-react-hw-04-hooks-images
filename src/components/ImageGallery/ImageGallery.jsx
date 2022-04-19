@@ -5,7 +5,7 @@ import { Gallery } from './ImageGallery.styled';
 export const ImageGallery = ({ images, openModal }) => {
   return (
     <Gallery>
-      {images.map(({ id, description, smallImage, largeImage }) => (
+      {images.map(({ id, smallImage, largeImage }) => (
         <ImageGalleryItem
           key={id}
           smallImage={smallImage}
