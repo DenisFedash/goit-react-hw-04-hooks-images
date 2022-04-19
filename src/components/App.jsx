@@ -6,6 +6,15 @@ import Button from './Button/Button';
 import { Loader } from './Loader/Loader';
 import Modal from './Modal/Modal';
 
+const getArrayImages = hits => {
+  return hits.map(({ id, tags, webformatURL, largeImageURL }) => ({
+    id: id,
+    description: tags,
+    smallImage: webformatURL,
+    largeImage: largeImageURL,
+  }));
+};
+
 export class App extends Component {
   state = {
     query: '',
@@ -55,14 +64,7 @@ export class App extends Component {
 
       fetchImages(query)
         .then(({ hits, totalHits }) => {
-          const imagesArray = hits.map(
-            ({ id, tags, webformatURL, largeImageURL }) => ({
-              id: id,
-              description: tags,
-              smallImage: webformatURL,
-              largeImage: largeImageURL,
-            })
-          );
+          const imagesArray = getArrayImages(hits);
 
           return this.setState({
             page: 1,
@@ -72,21 +74,15 @@ export class App extends Component {
           });
         })
         .catch(error => this.setState({ error }))
-        .finally(() =>
-          this.setState(({ isLoading }) => ({ isLoading: !isLoading }))
-        );
+        .finally(() => this.setState({ isLoading: false }));
     }
+
     if (prevState.page !== page && page !== 1) {
       this.setState(({ isLoading }) => ({ isLoading: !isLoading }));
 
       fetchImages(query, page)
         .then(({ hits }) => {
-          const imagesArray = hits.map(hit => ({
-            id: hit.id,
-            description: hit.tags,
-            smallImage: hit.webformatURL,
-            largeImage: hit.largeImageURL,
-          }));
+          const imagesArray = getArrayImages(hits);
 
           return this.setState(({ images, imagesOnPage }) => {
             return {
@@ -96,18 +92,12 @@ export class App extends Component {
           });
         })
         .catch(error => this.setState({ error }))
-        .finally(() =>
-          this.setState(({ isLoading }) => ({ isLoading: !isLoading }))
-        );
+        .finally(() => this.setState({ isLoading: false }));
     }
   }
 
   getSearchRequest = query => {
     this.setState({ query });
-    if (this.state.query === 0) {
-      alert('fuck');
-      return;
-    }
   };
 
   onNextFetch = () => {
