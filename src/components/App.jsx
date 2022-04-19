@@ -5,6 +5,7 @@ import { ImageGallery } from './ImageGallery/ImageGallery';
 import Button from './Button/Button';
 import { Loader } from './Loader/Loader';
 import Modal from './Modal/Modal';
+import { Message } from './Message/Message';
 
 const getArrayImages = hits => {
   return hits.map(({ id, tags, webformatURL, largeImageURL }) => ({
@@ -135,6 +136,12 @@ export class App extends Component {
     return (
       <>
         <Searchbar onSubmit={this.getSearchRequest} />
+        {totalImages < 1 && (
+          <Message>
+            <h2>The gallery is empty 🙁</h2>
+            <p>Use search field!</p>
+          </Message>
+        )}
         {images && <ImageGallery openModal={this.openModal} images={images} />}
         {isLoading && <Loader />}
         {imagesOnPage >= 12 && imagesOnPage < totalImages && (
