@@ -1,6 +1,6 @@
 import { Component } from 'react';
 import PropTypes from 'prop-types';
-import { ReactComponent as SearchIcon } from '../../svg/search.svg';
+import { BiSearchAlt } from 'react-icons/bi';
 import { Conatiner, Form, Input, Button, TextBtn } from './Searchbar.styled';
 
 export class Searchbar extends Component {
@@ -37,7 +37,7 @@ export class Searchbar extends Component {
         <Form onSubmit={this.onSubmitForm}>
           <Button type="submit">
             <TextBtn>
-              <SearchIcon width="20px" height="20px" />
+              <BiSearchAlt size={20} />
             </TextBtn>
           </Button>
 

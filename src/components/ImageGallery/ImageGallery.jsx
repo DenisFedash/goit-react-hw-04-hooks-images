@@ -5,12 +5,13 @@ import { Gallery } from './ImageGallery.styled';
 export const ImageGallery = ({ images, openModal }) => {
   return (
     <Gallery>
-      {images.map(({ id, smallImage, largeImage }) => (
+      {images.map(({ id, smallImage, largeImage, description }) => (
         <ImageGalleryItem
           key={id}
           smallImage={smallImage}
           largeImage={largeImage}
           openModal={openModal}
+          description={description}
         />
       ))}
     </Gallery>
@@ -23,6 +24,7 @@ ImageGallery.prototype = {
       id: PropTypes.number.isRequired,
       smallImage: PropTypes.string.isRequired,
       largeImage: PropTypes.string.isRequired,
+      description: PropTypes.string,
     })
   ).isRequired,
 };
