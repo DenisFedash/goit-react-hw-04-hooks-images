@@ -27,4 +27,5 @@ ImageGallery.prototype = {
       description: PropTypes.string,
     })
   ).isRequired,
+  openModal: PropTypes.func.isRequired,
 };
