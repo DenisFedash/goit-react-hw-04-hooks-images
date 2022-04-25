@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { useState, useEffect } from 'react';
 import { Searchbar } from './Searchbar/Searchbar';
 import fetchImages from '../services/api';
 import { ImageGallery } from './ImageGallery/ImageGallery';
@@ -16,145 +16,95 @@ const getArrayImages = hits => {
   }));
 };
 
-export class App extends Component {
-  state = {
-    query: '',
-    page: 1,
-    imagesOnPage: 0,
-    totalImages: 0,
-    isLoading: false,
-    showModal: false,
-    images: null,
-    error: null,
-    currentImageUrl: null,
-    currentImageDescription: null,
-  };
+export function App() {
+  const [query, setQuery] = useState('');
+  const [page, setPage] = useState(1);
+  const [totalImages, setTotalImages] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [images, setImages] = useState(null);
+  const [error, setError] = useState(null);
+  const [currentImageUrl, setCurrentImageUrl] = useState(null);
+  const [currentImageDescription, setCurrentImageDescription] = useState(null);
 
-  onChangeSearch = query => {
-    this.setState({
-      images: [],
-      currentPage: 1,
-      search: query,
-    });
-  };
+  if (error) {
+    console.log(error);
+  }
 
-  getImages = () => {
-    const { pages, search } = this.state;
-
-    this.setState({
-      isLoading: true,
-    });
-
-    fetchImages(search, pages)
-      .then(images => {
-        this.setState(prevState => ({
-          images: [...prevState.images, ...images.hits],
-          pages: prevState.pages + 1,
-        }));
-      })
-      .catch(error => {
-        this.setState({ error });
-      });
-  };
-
-  componentDidUpdate(prevProps, prevState) {
-    const { query, page } = this.state;
-
-    if (prevState.query !== query) {
-      this.setState(({ isLoading }) => ({ isLoading: !isLoading }));
-
-      fetchImages(query)
+  useEffect(() => {
+    if (query !== '') {
+      setIsLoading(prevIsLoading => !prevIsLoading);
+      fetchImages(query, page)
         .then(({ hits, totalHits }) => {
           const imagesArray = getArrayImages(hits);
 
-          return this.setState({
-            page: 1,
-            images: imagesArray,
-            imagesOnPage: imagesArray.length,
-            totalImages: totalHits,
-          });
+          setTotalImages(totalHits);
+
+          return imagesArray;
         })
-        .catch(error => this.setState({ error }))
-        .finally(() => this.setState({ isLoading: false }));
-    }
 
-    if (prevState.page !== page && page !== 1) {
-      this.setState(({ isLoading }) => ({ isLoading: !isLoading }));
-
-      fetchImages(query, page)
-        .then(({ hits }) => {
-          const imagesArray = getArrayImages(hits);
-
-          return this.setState(({ images, imagesOnPage }) => {
-            return {
-              images: [...images, ...imagesArray],
-              imagesOnPage: imagesOnPage + imagesArray.length,
-            };
-          });
+        .then(imagesArray => {
+          if (page === 1) {
+            setImages(imagesArray);
+          }
+          return imagesArray;
         })
-        .catch(error => this.setState({ error }))
-        .finally(() => this.setState({ isLoading: false }));
+        .then(imagesArray => {
+          if (page !== 1) {
+            setImages(prevImages => [...prevImages, ...imagesArray]);
+          }
+        })
+        .catch(error => setError('Something went wrong. Try again.'))
+        .finally(() => setIsLoading(false));
     }
-  }
+  }, [page, query]);
 
-  getSearchRequest = query => {
-    this.setState({ query });
+  const onChangeSearch = query => {
+    setImages([]);
+    setPage(1);
+    setQuery(query);
   };
 
-  onNextFetch = () => {
-    this.setState(({ page }) => ({ page: page + 1 }));
+  const onNextFetch = () => {
+    setPage(prevPages => prevPages + 1);
   };
 
-  toggleModal = () => {
-    this.setState(({ showModal }) => ({ showModal: !showModal }));
+  const toggleModal = () => {
+    setShowModal(prevShowmodal => !prevShowmodal);
   };
 
-  openModal = e => {
+  const openModal = e => {
     const currentImageUrl = e.target.dataset.large;
     const currentImageDescription = e.target.alt;
 
     if (e.target.nodeName === 'IMG') {
-      this.setState(({ showModal }) => ({
-        showModal: !showModal,
-        currentImageUrl: currentImageUrl,
-        currentImageDescription: currentImageDescription,
-      }));
+      setShowModal(prevShowmodal => !prevShowmodal);
+      setCurrentImageUrl(currentImageUrl);
+      setCurrentImageDescription(currentImageDescription);
     }
   };
 
-  render() {
-    const {
-      images,
-      imagesOnPage,
-      totalImages,
-      isLoading,
-      showModal,
-      currentImageUrl,
-      currentImageDescription,
-    } = this.state;
-
-    return (
-      <>
-        <Searchbar onSubmit={this.getSearchRequest} />
-        {totalImages < 1 && (
-          <Message>
-            <h2>The gallery is empty 🙁</h2>
-            <p>Use search field!</p>
-          </Message>
-        )}
-        {images && <ImageGallery openModal={this.openModal} images={images} />}
-        {isLoading && <Loader />}
-        {imagesOnPage >= 12 && imagesOnPage < totalImages && (
-          <Button onNextFetch={this.onNextFetch} />
-        )}
-        {showModal && (
-          <Modal
-            onClose={this.toggleModal}
-            currentImageUrl={currentImageUrl}
-            currentImageDescription={currentImageDescription}
-          />
-        )}
-      </>
-    );
-  }
+  return (
+    <>
+      <Searchbar onSubmit={onChangeSearch} />
+      {totalImages < 1 && (
+        <Message>
+          <h2>The gallery is empty 🙁</h2>
+          <p>Use search field!</p>
+        </Message>
+      )}
+      {images && <ImageGallery openModal={openModal} images={images} />}
+      {isLoading && <Loader />}
+      {images && images.length >= 12 && images.length < totalImages && (
+        <Button onNextFetch={onNextFetch} />
+      )}
+      {showModal && (
+        <Modal
+          onClose={toggleModal}
+          currentImageUrl={currentImageUrl}
+          currentImageDescription={currentImageDescription}
+        />
+      )}
+    </>
+  );
 }
