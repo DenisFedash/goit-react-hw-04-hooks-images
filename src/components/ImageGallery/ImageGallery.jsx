@@ -24,7 +24,7 @@ ImageGallery.prototype = {
       id: PropTypes.number.isRequired,
       smallImage: PropTypes.string.isRequired,
       largeImage: PropTypes.string.isRequired,
-      description: PropTypes.string,
+      description: PropTypes.string.isRequired,
     })
   ).isRequired,
   openModal: PropTypes.func.isRequired,

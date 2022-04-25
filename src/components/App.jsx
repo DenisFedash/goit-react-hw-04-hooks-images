@@ -42,17 +42,8 @@ export function App() {
 
           return imagesArray;
         })
-
         .then(imagesArray => {
-          if (page === 1) {
-            setImages(imagesArray);
-          }
-          return imagesArray;
-        })
-        .then(imagesArray => {
-          if (page !== 1) {
-            setImages(prevImages => [...prevImages, ...imagesArray]);
-          }
+          setImages(prevImages => [...prevImages, ...imagesArray]);
         })
         .catch(error => setError('Something went wrong. Try again.'))
         .finally(() => setIsLoading(false));

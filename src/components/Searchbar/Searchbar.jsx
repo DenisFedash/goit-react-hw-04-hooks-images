@@ -17,12 +17,8 @@ export function Searchbar({ onSubmit }) {
       alert('Enter a search term.');
       return;
     }
-    reset();
-    onSubmit(search);
-  };
 
-  const reset = () => {
-    setSearch('');
+    onSubmit(search);
   };
 
   return (
